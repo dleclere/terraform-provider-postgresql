@@ -212,7 +212,7 @@ func resourcePostgreSQLRoleCreate(d *schema.ResourceData, meta interface{}) erro
 		boolOpts = append(boolOpts, boolOptType{roleReplicationAttr, "REPLICATION", "NOREPLICATION"})
 	}
 
-	createOpts := make([]string, 0, len(stringOpts)+len(intOpts)+len(boolOpts))
+	createOpts := make([]string, 0, len(stringOpts)+len(intOpts)+len(boolOpts)+1)
 
 	for _, opt := range stringOpts {
 		v, ok := d.GetOk(opt.hclKey)
@@ -266,6 +266,16 @@ func resourcePostgreSQLRoleCreate(d *schema.ResourceData, meta interface{}) erro
 		createOpts = append(createOpts, valStr)
 	}
 
+	var roles []string
+
+	for _, role := range d.Get("roles").(*schema.Set).List() {
+		roles = append(roles, pq.QuoteIdentifier(role.(string)))
+	}
+
+	if len(roles) > 0 {
+		createOpts = append(createOpts, fmt.Sprintf("IN ROLE %s", strings.Join(roles, ",")))
+	}
+
 	roleName := d.Get(roleNameAttr).(string)
 	createStr := strings.Join(createOpts, " ")
 	if len(createOpts) > 0 {
@@ -280,10 +290,6 @@ func resourcePostgreSQLRoleCreate(d *schema.ResourceData, meta interface{}) erro
 	sql := fmt.Sprintf("CREATE ROLE %s%s", pq.QuoteIdentifier(roleName), createStr)
 	if _, err := txn.Exec(sql); err != nil {
 		return fmt.Errorf("error creating role %s: %w", roleName, err)
-	}
-
-	if err = grantRoles(txn, d); err != nil {
-		return err
 	}
 
 	if err = alterSearchPath(txn, d); err != nil {
@@ -318,7 +324,7 @@ func resourcePostgreSQLRoleDelete(d *schema.ResourceData, meta interface{}) erro
 
 	if !d.Get(roleSkipReassignOwnedAttr).(bool) {
 		if err := withRolesGranted(txn, []string{roleName}, func() error {
-			currentUser := c.config.getDatabaseUsername()
+			currentUser := c.getDatabaseUsername()
 			if _, err := txn.Exec(fmt.Sprintf("REASSIGN OWNED BY %s TO %s", pq.QuoteIdentifier(roleName), pq.QuoteIdentifier(currentUser))); err != nil {
 				return fmt.Errorf("could not reassign owned by role %s to %s: %w", roleName, currentUser, err)
 			}
@@ -520,7 +526,7 @@ func readRolePassword(c *Client, d *schema.ResourceData, roleCanLogin bool) (str
 				"connected user %s is not a SUPERUSER. "+
 				"You can set `superuser = false` in the provider configuration "+
 				"so it will not try to read the password from Postgres",
-			c.config.getDatabaseUsername(),
+			c.getDatabaseUsername(),
 		)
 	}
 

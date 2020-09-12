@@ -122,7 +122,7 @@ func resourcePostgreSQLDatabaseCreate(d *schema.ResourceData, meta interface{}) 
 }
 
 func createDatabase(c *Client, d *schema.ResourceData) error {
-	currentUser := c.config.getDatabaseUsername()
+	currentUser := c.getDatabaseUsername()
 	owner := d.Get(dbOwnerAttr).(string)
 
 	db := c.DB()
@@ -230,7 +230,7 @@ func resourcePostgreSQLDatabaseDelete(d *schema.ResourceData, meta interface{}) 
 	c.catalogLock.Lock()
 	defer c.catalogLock.Unlock()
 
-	currentUser := c.config.getDatabaseUsername()
+	currentUser := c.getDatabaseUsername()
 	owner := d.Get(dbOwnerAttr).(string)
 
 	var err error
@@ -445,7 +445,7 @@ func setDBOwner(c *Client, d *schema.ResourceData) error {
 	if owner == "" {
 		return nil
 	}
-	currentUser := c.config.getDatabaseUsername()
+	currentUser := c.getDatabaseUsername()
 
 	db := c.DB()
 

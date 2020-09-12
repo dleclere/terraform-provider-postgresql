@@ -301,6 +301,16 @@ func (c *Config) getDatabaseUsername() string {
 	return c.Username
 }
 
+func (c *Client) getDatabaseUsername() string {
+	var currentUser string
+	db := c.DB()
+	err := db.QueryRow(`SELECT CURRENT_USER`).Scan(&currentUser)
+	if err != nil {
+		return c.config.getDatabaseUsername()
+	}
+	return currentUser
+}
+
 // DB returns a copy to an sql.Open()'ed database connection.  Callers must
 // return their database resources.  Use of QueryRow() or Exec() is encouraged.
 // Query() must have their rows.Close()'ed.
