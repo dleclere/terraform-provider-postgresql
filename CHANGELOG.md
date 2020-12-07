@@ -1,4 +1,39 @@
-## 1.8.0 (Unreleased)
+## 1.8.1 (November 26, 2020)
+
+BUG FIXES:
+
+* Revert "Use lazy connections" [#199](https://github.com/terraform-providers/terraform-provider-postgresql/pull/199)
+  Plugin panics if not able to connect to the database.
+
+## 1.8.0 (November 26, 2020)
+
+FEATURES:
+
+* `postgresql_extension`: Support drop cascade.
+  ([#162](https://github.com/terraform-providers/terraform-provider-postgresql/pull/162) - @multani)
+
+* ~~Use lazy connections.
+  ([#199](https://github.com/terraform-providers/terraform-provider-postgresql/pull/199) - @estahn)~~ (Reverted in 1.8.1)
+
+BUG FIXES:
+
+* `postgresql_grant`: Fix grant on function by removing `prokind` column selection.
+  ([#171](https://github.com/terraform-providers/terraform-provider-postgresql/pull/171) - @Tommi2Day)
+
+DEV IMPROVEMENTS:
+
+* Set up Github Workflows to create releases.
+  ([#3](https://github.com/cyrilgdn/terraform-provider-postgresql/pull/3) - @thenonameguy)
+
+## 1.7.2 (July 30, 2020)
+
+This is the first release on [Terraform registry](https://registry.terraform.io/providers/cyrilgdn/postgresql/latest)
+
+DEV IMPROVEMENTS:
+
+* Add goreleaser config
+* Pusblish on Terraform registry: https://registry.terraform.io/providers/cyrilgdn/postgresql/latest
+
 ## 1.7.1 (July 30, 2020)
 
 BUG FIXES:
