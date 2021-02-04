@@ -286,7 +286,9 @@ func resourcePostgreSQLRoleCreate(d *schema.ResourceData, meta interface{}) erro
 			createStr = " " + createStr
 		}
 	}
-
+	if _, err := txn.Exec("SET aad_validate_oids_in_tenant = off"); err != nil {
+		return fmt.Errorf("Failed to disable oids validation")
+	}
 	sql := fmt.Sprintf("CREATE ROLE %s%s", pq.QuoteIdentifier(roleName), createStr)
 	if _, err := txn.Exec(sql); err != nil {
 		return fmt.Errorf("error creating role %s: %w", roleName, err)
